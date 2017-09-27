@@ -1,9 +1,14 @@
 #include <asm.h>
-
+# 解释：http://aprilwith.me/ucore-ex1-notes.html
 # Start the CPU: switch to 32-bit protected mode, jump into C.
 # The BIOS loads this code from the first sector of the hard disk into
 # memory at physical address 0x7c00 and starts executing in real mode
 # with %cs=0 %ip=7c00.
+
+# 段描述符的大小为 64 位
+# 0x00 ---> 第 0 个选择子
+# 0x08 ---> 第 1 个选择子 代码段 PROT_MODE_CSEG
+# 0x10 ---> 第 2 个选择子 数据段 PROT_MODE_DSEG
 
 .set PROT_MODE_CSEG,        0x8                     # kernel code segment selector
 .set PROT_MODE_DSEG,        0x10                    # kernel data segment selector
@@ -16,7 +21,8 @@ start:
 # Clear interrupt flag; interrupts disabled when interrupt flag cleared.
 # CLI中断标志置0指令(Clear interrupt)IF<-0
     cli                                             # Disable interrupts
-# DF：方向标志。DF=0时，每次执行字符串指令后，源或目的地址指针用加法自动地修改地址；
+# DF：方向标志。
+# DF=0时，每次执行字符串指令后，源或目的地址指针用加法自动地修改地址；
 # DF=1时用减法修改地址。它用来控制地址的方向变化。
 # CLD方向标志置0指令(Clear direction)DF<-0
 # http://blog.sina.com.cn/s/blog_54f82cc2010142zh.html
@@ -66,6 +72,7 @@ seta20.2:
 
     # Jump to next instruction, but in 32-bit code segment.
     # Switches processor into 32-bit mode.
+    # http://m.newsmth.net/article/Assembler/7547
     ljmp $PROT_MODE_CSEG, $protcseg
 
 .code32                                             # Assemble for 32-bit mode
@@ -95,5 +102,9 @@ gdt:
     SEG_ASM(STA_W, 0x0, 0xffffffff)                 # data seg for bootloader and kernel
 
 gdtdesc:
+# 为什么是 0x17 ?
+# 0x00 ~ 0x07
+# 0x08 ~ 0x0f
+# 0x10 ~ 0x17
     .word 0x17                                      # sizeof(gdt) - 1
     .long gdt                                       # address gdt
