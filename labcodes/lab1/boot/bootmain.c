@@ -36,6 +36,8 @@
 /* waitdisk - wait for disk ready */
 static void
 waitdisk(void) {
+    // status 寄存器 ： 7:BSY 6:DRDY
+    // 1100 0000(0xC0)  0100 0000   判断第6位 设备是否就绪
     while ((inb(0x1F7) & 0xC0) != 0x40)
         /* do nothing */;
 }
@@ -46,17 +48,18 @@ readsect(void *dst, uint32_t secno) {
     // wait for disk to be ready
     waitdisk();
 
-    outb(0x1F2, 1);                         // count = 1
-    outb(0x1F3, secno & 0xFF);
-    outb(0x1F4, (secno >> 8) & 0xFF);
-    outb(0x1F5, (secno >> 16) & 0xFF);
-    outb(0x1F6, ((secno >> 24) & 0xF) | 0xE0);
-    outb(0x1F7, 0x20);                      // cmd 0x20 - read sectors
+    outb(0x1F2, 1); // 指定读取或者写入的扇区 8位寄存器 0为整个扇区 count = 1
+    outb(0x1F3, secno & 0xFF);// LBA 0~7位
+    outb(0x1F4, (secno >> 8) & 0xFF); // LBA 8~15位
+    outb(0x1F5, (secno >> 16) & 0xFF);// LBA 16~23位
+    outb(0x1F6, ((secno >> 24) & 0xF) | 0xE0);// LBA 24~27位
+    outb(0x1F7, 0x20);                      // cmd 0x20 - read sectors 读扇区
 
     // wait for disk to be ready
     waitdisk();
 
     // read a sector
+    // 从端口1F0H中读取数据到dst中, 每次4字节, 读取0x80次
     insl(0x1F0, dst, SECTSIZE / 4);
 }
 
@@ -87,7 +90,7 @@ void
 bootmain(void) {
     // read the 1st page off disk
     readseg((uintptr_t)ELFHDR, SECTSIZE * 8, 0);
-
+// elf文件 http://leenjewel.github.io/blog/2015/05/26/%5B%28xue-xi-xv6%29%5D-jia-zai-bing-yun-xing-nei-he/
     // is this a valid ELF?
     if (ELFHDR->e_magic != ELF_MAGIC) {
         goto bad;
