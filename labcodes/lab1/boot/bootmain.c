@@ -89,6 +89,7 @@ readseg(uintptr_t va, uint32_t count, uint32_t offset) {
 void
 bootmain(void) {
     // read the 1st page off disk
+    // ELF Header 4096
     readseg((uintptr_t)ELFHDR, SECTSIZE * 8, 0);
 // elf文件 http://leenjewel.github.io/blog/2015/05/26/%5B%28xue-xi-xv6%29%5D-jia-zai-bing-yun-xing-nei-he/
     // is this a valid ELF?
@@ -99,9 +100,14 @@ bootmain(void) {
     struct proghdr *ph, *eph;
 
     // load each program segment (ignores ph flags)
+    // uint phoff; 4 字节，表示该文件的“程序头部表”相对于文件的位置，单位是字节
     ph = (struct proghdr *)((uintptr_t)ELFHDR + ELFHDR->e_phoff);
+    // ushort phnum; 2 字节，表示程序头部表的入口个数，
+    // phnum * phentsize = 程序头部表大小（单位是字节）
     eph = ph + ELFHDR->e_phnum;
     for (; ph < eph; ph ++) {
+        // uint memsz;4 字节， 段在内存中的长度
+        // uint off;4 字节， 段的第一个字节在文件中的偏移
         readseg(ph->p_va & 0xFFFFFF, ph->p_memsz, ph->p_offset);
     }
 
