@@ -29,7 +29,7 @@
  *
  *  * bootmain() in this file takes over, reads in the kernel and jumps to it.
  * */
-
+// http://xinqiu.me/2016/03/17/ucore/ 参考答案
 #define SECTSIZE        512
 #define ELFHDR          ((struct elfhdr *)0x10000)      // scratch space
 
