@@ -7,7 +7,7 @@
 #define SEG_NULLASM                                             \
     .word 0, 0;                                                 \
     .byte 0, 0, 0, 0
-
+/// 为啥是 (lim) >> 12
 #define SEG_ASM(type,base,lim)                                  \
     .word (((lim) >> 12) & 0xffff), ((base) & 0xffff);          \
     .byte (((base) >> 16) & 0xff), (0x90 | (type)),             \
