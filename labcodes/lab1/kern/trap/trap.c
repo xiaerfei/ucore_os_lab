@@ -47,7 +47,8 @@ idt_init(void) {
       *     Notice: the argument of lidt is idt_pd. try to find it!
       */
       extern uintptr_t __vectors[];
-      for(int i = 0;i < sizeof(idt)/sizeof(struct gatedesc);i++)
+      int i;
+      for(i = 0;i < sizeof(idt)/sizeof(struct gatedesc);i++)
       {
           SETGATE(idt[i],0,GD_KTEXT,__vectors[i],DPL_KERNEL);
       }
