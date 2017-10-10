@@ -157,8 +157,9 @@ trap_dispatch(struct trapframe *tf) {
          * (3) Too Simple? Yes, I think so!
          */
         ticks ++;
-        if (ticks % TICK_NUM == 0)
+        if (ticks == TICK_NUM)
         {
+            ticks %= TICK_NUM;
             print_ticks();
         }
         break;
