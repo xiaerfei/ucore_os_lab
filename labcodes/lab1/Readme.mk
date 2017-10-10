@@ -1,6 +1,6 @@
 ## Parse
 
-
+[其它实验报告参考](http://blog.csdn.net/qq_19876131/article/category/6276553)
 [ucore-QA](https://chyyuu.gitbooks.io/os_course_qa/content/02-interrupt-exception-syscall.html)
 
 [GDT 与 LDT](http://www.cnblogs.com/hicjiajia/archive/2012/05/25/2518684.html)
