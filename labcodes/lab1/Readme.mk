@@ -1,5 +1,9 @@
 ## Parse
 
+
+[gcc内敛汇编](http://www.linuxprobe.com/gcc-how-to.html)
+
+
 [其它实验报告参考](http://blog.csdn.net/qq_19876131/article/category/6276553)
 [ucore-QA](https://chyyuu.gitbooks.io/os_course_qa/content/02-interrupt-exception-syscall.html)
 
