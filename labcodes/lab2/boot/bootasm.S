@@ -52,13 +52,13 @@ start_probe:
     movl $20, %ecx
     movl $SMAP, %edx
     int $0x15
-    jnc cont; 若INT 15中断执行成功，则不置位，否则置位. 如果进位位没有置位则跳转,进位标志＝0  
+    jnc cont # 若INT 15中断执行成功，则不置位，否则置位. 如果进位位没有置位则跳转,进位标志＝0  
     movw $12345, 0x8000
     jmp finish_probe
 cont:
     addw $20, %di
     incl 0x8000
-    cmpl $0, %ebx;如果是第一次调用或内存区域扫描完毕，则为0。 如果不是，则存放上次调用之后的计数值
+    cmpl $0, %ebx # 如果是第一次调用或内存区域扫描完毕，则为0。 如果不是，则存放上次调用之后的计数值
     jnz start_probe
 finish_probe:
 

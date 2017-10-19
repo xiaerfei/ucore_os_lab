@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "*.ld": "c",
+        "pmm.h": "c",
+        "mmu.h": "c",
+        "x86.h": "c",
+        "defs.h": "c",
+        "stdio.h": "c",
+        "string.h": "c",
+        "memlayout.h": "c",
+        "default_pmm.h": "c",
+        "list.h": "c"
+    }
+}
