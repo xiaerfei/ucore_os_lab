@@ -1,6 +1,10 @@
 #ifndef __LIBS_ATOMIC_H__
 #define __LIBS_ATOMIC_H__
 
+/*
+http://www.cnblogs.com/yangce/archive/2012/04/16/2910093.html
+*/
+
 /* Atomic operations that C can't guarantee us. Useful for resource counting etc.. */
 
 static inline void set_bit(int nr, volatile void *addr) __attribute__((always_inline));

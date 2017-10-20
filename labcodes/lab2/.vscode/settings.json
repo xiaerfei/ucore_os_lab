@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.ld": "c",
+        "default_pmm.h": "c"
+    }
+}
