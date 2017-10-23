@@ -203,6 +203,20 @@ page_init(void) {
             }
         }
     }
+    
+    /*
+        memory: 0009fc00, [00000000, 0009fbff], type = 1.
+        memory: 00000400, [0009fc00, 0009ffff], type = 2.
+        memory: 00010000, [000f0000, 000fffff], type = 2.
+        memory: 07ee0000, [00100000, 07fdffff], type = 1.
+        memory: 00020000, [07fe0000, 07ffffff], type = 2.
+        memory: 00040000, [fffc0000, ffffffff], type = 2.
+        -----> maxpa : 07fe0000
+        -----> end : c0118968
+    */
+
+
+
     if (maxpa > KMEMSIZE) {
         maxpa = KMEMSIZE;
     }
@@ -213,6 +227,7 @@ page_init(void) {
     pages = (struct Page *)ROUNDUP((void *)end, PGSIZE);
 
     for (i = 0; i < npage; i ++) {
+        /// 将pages->flag 第 0 位置 1
         SetPageReserved(pages + i);
     }
 
