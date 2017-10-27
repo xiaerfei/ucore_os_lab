@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.ld": "c",
+        "pmm.h": "c",
+        "list.h": "c"
+    }
+}

@@ -200,6 +200,7 @@ page_init(void) {
         if (memmap->map[i].type == E820_ARM) {
             if (maxpa < end && begin < KMEMSIZE) {
                 maxpa = end;
+                cprintf("---> for maxpa: %08llx i = %d\n",maxpa,i);
             }
         }
     }
@@ -214,17 +215,18 @@ page_init(void) {
         -----> maxpa : 07fe0000
         -----> end : c0118968
     */
-
-
-
     if (maxpa > KMEMSIZE) {
         maxpa = KMEMSIZE;
+        cprintf("---> if maxpa: %08llx\n",maxpa);
     }
 
+    cprintf("---> maxpa: %08llx\n",maxpa);
     extern char end[];
 
     npage = maxpa / PGSIZE;
     pages = (struct Page *)ROUNDUP((void *)end, PGSIZE);
+    cprintf("---> end: %08llx\n",end);
+    cprintf("---> npage: %d pages: %08llx\n",npage,pages);
 
     for (i = 0; i < npage; i ++) {
         /// 将pages->flag 第 0 位置 1
@@ -232,16 +234,18 @@ page_init(void) {
     }
 
     uintptr_t freemem = PADDR((uintptr_t)pages + sizeof(struct Page) * npage);
-
+    cprintf("---> freemem: %08llx\n",freemem);
     for (i = 0; i < memmap->nr_map; i ++) {
         uint64_t begin = memmap->map[i].addr, end = begin + memmap->map[i].size;
         if (memmap->map[i].type == E820_ARM) {
+            cprintf("  pre--memory: %08llx, [%08llx, %08llx]\n",memmap->map[i].size, begin, end);
             if (begin < freemem) {
                 begin = freemem;
             }
             if (end > KMEMSIZE) {
                 end = KMEMSIZE;
             }
+            cprintf("  next--memory: %08llx, [%08llx, %08llx]\n",memmap->map[i].size, begin, end);
             if (begin < end) {
                 begin = ROUNDUP(begin, PGSIZE);
                 end = ROUNDDOWN(end, PGSIZE);
@@ -270,8 +274,10 @@ enable_paging(void) {
 //  size: memory size
 //  pa:   physical address of this memory
 //  perm: permission of this memory  
+//     boot_map_segment(boot_pgdir, KERNBASE, KMEMSIZE, 0, PTE_W);
 static void
 boot_map_segment(pde_t *pgdir, uintptr_t la, size_t size, uintptr_t pa, uint32_t perm) {
+    //                  pgdir       0xC0000000     0x38000000       0           0x002
     assert(PGOFF(la) == PGOFF(pa));
     size_t n = ROUNDUP(size + PGOFF(la), PGSIZE) / PGSIZE;
     la = ROUNDDOWN(la, PGSIZE);
@@ -395,6 +401,19 @@ get_pte(pde_t *pgdir, uintptr_t la, bool create) {
     }
     return NULL;          // (8) return page table entry
 #endif
+
+    pde_t *pdep = &pgdir[PDX(la)];
+    if (!(*pdep & PTE_P)) {
+        struct Page *page;
+        if (!create || (page = alloc_page()) == NULL) {
+            return NULL;
+        }
+        set_page_ref(page, 1);
+        uintptr_t pa = page2pa(page);
+        memset(KADDR(pa), 0, PGSIZE);
+        *pdep = pa | PTE_U | PTE_W | PTE_P;
+    }
+    return &((pte_t *)KADDR(PDE_ADDR(*pdep)))[PTX(la)];
 }
 
 //get_page - get related Page struct for linear address la using PDT pgdir
@@ -440,6 +459,14 @@ page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep) {
                                   //(6) flush tlb
     }
 #endif
+    if (*ptep & PTE_P) {
+        struct Page *page = pte2page(*ptep);
+        if (page_ref_dec(page) == 0) {
+            free_page(page);
+        }
+        *ptep = 0;
+        tlb_invalidate(pgdir, la);
+    }
 }
 
 //page_remove - free an Page which is related linear address la and has an validated pte
@@ -476,6 +503,7 @@ page_insert(pde_t *pgdir, struct Page *page, uintptr_t la, uint32_t perm) {
         }
     }
     *ptep = page2pa(page) | PTE_P | perm;
+    // http://www.cnblogs.com/brucemengbm/p/6815829.html
     tlb_invalidate(pgdir, la);
     return 0;
 }
